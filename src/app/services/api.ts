@@ -46,16 +46,16 @@ export class ApiService {
     }
 
     return this.http
-      .get<DataFilterListResponse>(`${this.baseUrl()}/api/data_filter_list/`, { params: httpParams })
+      .get<DataFilterListResponse>(`${this.baseUrl()}/data_filter_list/`, { params: httpParams })
       .pipe(map(response => response.results));
   }
 
   getFilterListById(id: number): Observable<DataFilterList> {
-    return this.http.get<DataFilterList>(`${this.baseUrl()}/api/data_filter_list/${id}/`);
+    return this.http.get<DataFilterList>(`${this.baseUrl()}/data_filter_list/${id}/`);
   }
 
   getAllCategories(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.baseUrl()}/api/data_filter_list/get_all_category/`);
+    return this.http.get<string[]>(`${this.baseUrl()}/data_filter_list/get_all_category/`);
   }
 
   parseFilterListData(data: string): string[] {

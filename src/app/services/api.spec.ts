@@ -67,7 +67,7 @@ describe('ApiService', () => {
     });
 
     const req = httpMock.expectOne(
-      'https://curtain-backend.omics.quest/api/data_filter_list/?limit=10'
+      'https://curtain-backend.omics.quest/data_filter_list/?limit=10'
     );
     expect(req.request.method).toBe('GET');
     req.flush(mockResponse);
