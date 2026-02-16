@@ -25,7 +25,7 @@ export class BarChart implements OnInit {
   private readonly dataService = inject(DataService);
 
   readonly breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Home', path: '/home' },
+    { label: 'Home', path: 'home' },
     { label: 'Copy Number Distribution' },
   ];
 

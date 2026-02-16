@@ -46,7 +46,7 @@ export class ScatterPlot implements OnInit {
   private readonly dataService = inject(DataService);
 
   readonly breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Home', path: '/home' },
+    { label: 'Home', path: 'home' },
     { label: 'Rank vs Copy Number' },
   ];
 
