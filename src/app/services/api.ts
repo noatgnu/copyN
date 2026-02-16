@@ -42,7 +42,7 @@ export class ApiService {
     if (params?.limit) {
       httpParams = httpParams.set('limit', params.limit.toString());
     } else {
-      httpParams = httpParams.set('limit', '10');
+      httpParams = httpParams.set('limit', '100000000');
     }
 
     return this.http
@@ -60,7 +60,9 @@ export class ApiService {
 
   parseFilterListData(data: string): string[] {
     return data
-      .split(/[\n,;]/)
+      .replace(/\r/g, '')
+      .split('\n')
+      .flatMap(line => line.split(/[;,]/))
       .map(item => item.trim())
       .filter(item => item.length > 0);
   }

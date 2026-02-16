@@ -67,7 +67,7 @@ export class BatchSelectModal implements OnInit {
   loadFilterLists(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.apiService.getFilterLists({ limit: 10 }).subscribe({
+    this.apiService.getFilterLists().subscribe({
       next: (lists) => {
         this.filterLists.set(lists);
         this.loading.set(false);
@@ -82,9 +82,9 @@ export class BatchSelectModal implements OnInit {
   searchByCategory(): void {
     this.loading.set(true);
     this.error.set(null);
-    const params: { category?: string; name?: string; limit: number } = { limit: 10 };
+    const params: { categoryExact?: string; name?: string } = {};
     if (this.selectedCategory()) {
-      params.category = this.selectedCategory();
+      params.categoryExact = this.selectedCategory();
     }
     if (this.searchQuery()) {
       params.name = this.searchQuery();
