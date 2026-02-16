@@ -1,7 +1,8 @@
-import { Component, inject, signal, computed, output, OnInit, input } from '@angular/core';
+import { Component, inject, signal, computed, output, OnInit, input, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
 import { DataFilterList } from '../../interfaces/data-filter-list';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 export type SearchMode = 'gene' | 'accession';
 
@@ -16,8 +17,10 @@ export interface BatchSelectResult {
   templateUrl: './batch-select-modal.html',
   styleUrl: './batch-select-modal.css',
 })
-export class BatchSelectModal implements OnInit {
+export class BatchSelectModal implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService);
+  private readonly destroy$ = new Subject<void>();
+  private readonly searchSubject = new Subject<string>();
 
   readonly initialSearchMode = input<SearchMode>('gene');
 
@@ -37,20 +40,27 @@ export class BatchSelectModal implements OnInit {
 
   readonly filteredLists = computed(() => {
     const lists = this.filterLists();
-    const category = this.selectedCategory();
-    const query = this.searchQuery().toLowerCase();
-
-    return lists.filter(list => {
-      const matchesCategory = !category || list.category === category;
-      const matchesQuery = !query || list.name.toLowerCase().includes(query);
-      return matchesCategory && matchesQuery;
-    });
+    return lists;
   });
 
   ngOnInit(): void {
     this.searchMode.set(this.initialSearchMode());
     this.loadCategories();
     this.loadFilterLists();
+
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(query => {
+      this.searchQuery.set(query);
+      this.searchByCategory();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   setSearchMode(mode: SearchMode): void {
@@ -109,7 +119,7 @@ export class BatchSelectModal implements OnInit {
 
   onSearchInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.searchQuery.set(input.value);
+    this.searchSubject.next(input.value);
   }
 
   onSearchSubmit(): void {
@@ -145,5 +155,10 @@ export class BatchSelectModal implements OnInit {
     if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
       this.onClose();
     }
+  }
+
+  getItemCount(data: string): number {
+    if (!data) return 0;
+    return data.split(/[\n,;]/).filter(item => item.trim().length > 0).length;
   }
 }
