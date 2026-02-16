@@ -65,71 +65,56 @@ export class BarChart implements OnInit {
     return allCellLines.filter(cl => cl.toLowerCase().includes(query));
   });
 
-  readonly barChartData = computed<BarChartData[]>(() => {
+  readonly charts = computed(() => {
     const genes = this.selectedGenes();
     const cellLines = this.selectedCellLines();
+    const colorMap = this.cellLineColorMap();
 
     if (genes.length === 0 || cellLines.length === 0) {
       return [];
     }
 
-    const allData: BarChartData[] = [];
-    for (const gene of genes) {
+    return genes.map(gene => {
       const data = this.dataService.getBarChartDataForGene(gene, cellLines);
-      allData.push(...data);
-    }
-    return allData;
-  });
+      const sortedData = [...data].sort((a, b) => b.copyNumber - a.copyNumber);
 
-  readonly plotData = computed(() => {
-    const chartData = this.barChartData();
-
-    if (chartData.length === 0) {
-      return [];
-    }
-
-    const sortedData = [...chartData].sort((a, b) => b.copyNumber - a.copyNumber);
-    const colorMap = this.cellLineColorMap();
-
-    return [
-      {
-        x: sortedData.map(d => d.cellLine),
-        y: sortedData.map(d => d.copyNumber),
-        type: 'bar',
-        marker: {
-          color: sortedData.map(d => colorMap.get(d.cellLine) || '#6366f1'),
-        },
-        text: sortedData.map(d => d.copyNumber.toFixed(0)),
-        textposition: 'outside',
-        textfont: {
-          size: 9,
-        },
-        hovertext: sortedData.map(d => `${d.cellLine}<br>${d.geneName}<br>Copy#: ${d.copyNumber.toFixed(0)}`),
-        hoverinfo: 'text',
-      },
-    ];
-  });
-
-  readonly plotLayout = computed(() => {
-    const genes = this.selectedGenes();
-    return {
-      title: {
-        text: `Copy Number Distribution${genes.length > 0 ? ' - ' + genes.join(', ') : ''}`,
-        font: { size: 16 },
-      },
-      xaxis: {
-        title: { text: 'Cell Line', font: { size: 12 } },
-        tickfont: { size: 9 },
-        tickangle: -45,
-      },
-      yaxis: {
-        title: { text: 'Copy Number', font: { size: 12 } },
-        tickfont: { size: 10 },
-      },
-      margin: { l: 60, r: 20, t: 50, b: 100 },
-      showlegend: false,
-      hovermode: 'closest',
-    };
+      return {
+        gene,
+        data: [
+          {
+            x: sortedData.map(d => d.cellLine),
+            y: sortedData.map(d => d.copyNumber),
+            type: 'bar',
+            marker: {
+              color: sortedData.map(d => colorMap.get(d.cellLine) || '#6366f1'),
+            },
+            text: sortedData.map(d => d.copyNumber.toFixed(0)),
+            textposition: 'outside',
+            textfont: { size: 9 },
+            hovertext: sortedData.map(d => `${d.cellLine}<br>${d.geneName}<br>Copy#: ${d.copyNumber.toFixed(0)}`),
+            hoverinfo: 'text',
+          },
+        ],
+        layout: {
+          title: {
+            text: `Copy Number: ${gene}`,
+            font: { size: 14 },
+          },
+          xaxis: {
+            title: { text: 'Cell Line', font: { size: 10 } },
+            tickfont: { size: 8 },
+            tickangle: -45,
+          },
+          yaxis: {
+            title: { text: 'Copy Number', font: { size: 10 } },
+            tickfont: { size: 9 },
+          },
+          margin: { l: 50, r: 20, t: 40, b: 80 },
+          showlegend: false,
+          hovermode: 'closest',
+        }
+      };
+    });
   });
 
   readonly plotConfig = {
@@ -138,7 +123,7 @@ export class BarChart implements OnInit {
     modeBarButtonsToRemove: ['lasso2d', 'select2d'],
   };
 
-  readonly hasData = computed(() => this.barChartData().length > 0);
+  readonly hasData = computed(() => this.charts().length > 0);
 
   ngOnInit(): void {
     this.dataService.loadData();

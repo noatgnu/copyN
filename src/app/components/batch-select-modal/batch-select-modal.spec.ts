@@ -33,7 +33,7 @@ describe('BatchSelectModal', () => {
   });
 
   it('should emit close event', () => {
-    const closeSpy = jasmine.createSpy('close');
+    const closeSpy = vi.fn();
     component.close.subscribe(closeSpy);
     component.onClose();
     expect(closeSpy).toHaveBeenCalled();
