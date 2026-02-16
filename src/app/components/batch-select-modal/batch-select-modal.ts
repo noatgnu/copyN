@@ -22,6 +22,8 @@ export class BatchSelectModal implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly searchSubject = new Subject<string>();
 
+  protected readonly Math = Math;
+
   readonly initialSearchMode = input<SearchMode>('gene');
 
   readonly close = output<void>();
@@ -38,9 +40,25 @@ export class BatchSelectModal implements OnInit, OnDestroy {
   readonly activeTab = signal<'lists' | 'custom'>('lists');
   readonly searchMode = signal<SearchMode>('gene');
 
+  readonly pageSize = 10;
+  readonly currentPage = signal<number>(1);
+
   readonly filteredLists = computed(() => {
-    const lists = this.filterLists();
-    return lists;
+    return this.filterLists();
+  });
+
+  readonly paginatedLists = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.filteredLists().slice(start, end);
+  });
+
+  readonly totalPages = computed(() => {
+    return Math.ceil(this.filteredLists().length / this.pageSize);
+  });
+
+  readonly pages = computed(() => {
+    return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
   });
 
   ngOnInit(): void {
@@ -77,6 +95,7 @@ export class BatchSelectModal implements OnInit, OnDestroy {
   loadFilterLists(): void {
     this.loading.set(true);
     this.error.set(null);
+    this.currentPage.set(1);
     this.apiService.getFilterLists().subscribe({
       next: (lists) => {
         this.filterLists.set(lists);
@@ -92,6 +111,7 @@ export class BatchSelectModal implements OnInit, OnDestroy {
   searchByCategory(): void {
     this.loading.set(true);
     this.error.set(null);
+    this.currentPage.set(1);
     const params: { categoryExact?: string; name?: string } = {};
     if (this.selectedCategory()) {
       params.categoryExact = this.selectedCategory();
@@ -109,6 +129,12 @@ export class BatchSelectModal implements OnInit, OnDestroy {
         this.loading.set(false);
       },
     });
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
   }
 
   onCategoryChange(event: Event): void {
