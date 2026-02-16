@@ -61,6 +61,53 @@ export class ScatterPlot implements OnInit {
 
   readonly showBatchModal = signal<boolean>(false);
 
+  readonly tablePage = signal<number>(1);
+  readonly tablePageSize = 10;
+
+  readonly selectedProteinsData = computed(() => {
+    const selectedCellLines = this.selectedCellLines();
+    const highlightedGenes = this.highlightedGenes();
+
+    if (selectedCellLines.length === 0 || highlightedGenes.length === 0) {
+      return [];
+    }
+
+    const result: { gene: string; cellLine: string; copyNumber: number; accession: string }[] = [];
+
+    for (const geneName of highlightedGenes) {
+      const protein = this.dataService.getProteinByGeneName(geneName);
+      if (protein) {
+        for (const cellLine of selectedCellLines) {
+          const copyNumber = protein.copyNumbers.get(cellLine);
+          if (copyNumber !== undefined) {
+            result.push({
+              gene: geneName,
+              cellLine,
+              copyNumber,
+              accession: protein.proteinGroup.split(';')[0],
+            });
+          }
+        }
+      }
+    }
+
+    return result.sort((a, b) => b.copyNumber - a.copyNumber);
+  });
+
+  readonly paginatedTableData = computed(() => {
+    const data = this.selectedProteinsData();
+    const start = (this.tablePage() - 1) * this.tablePageSize;
+    return data.slice(start, start + this.tablePageSize);
+  });
+
+  readonly tableTotalPages = computed(() => {
+    return Math.ceil(this.selectedProteinsData().length / this.tablePageSize);
+  });
+
+  readonly tablePages = computed(() => {
+    return Array.from({ length: this.tableTotalPages() }, (_, i) => i + 1);
+  });
+
   private readonly cellLineColorMap = computed(() => {
     const map = new Map<string, string>();
     this.cellLines().forEach((cl, idx) => {
@@ -207,7 +254,48 @@ export class ScatterPlot implements OnInit {
     this.showBatchModal.set(false);
   }
 
+  onPlotClick(event: any): void {
+    if (!event || !event.points || event.points.length === 0) {
+      return;
+    }
+
+    const point = event.points[0];
+    const hoverText = point.hovertext || point.text;
+    
+    if (hoverText) {
+      // The hovertext format is: `${cellLine}<br>${p.geneName}<br>Copy#: ...`
+      // Or for normal points: `${p.geneName}<br>Copy#: ...`
+      const parts = hoverText.split('<br>');
+      let geneNamePart = parts[0];
+      
+      // If it's a highlighted point, parts[0] is cell line, parts[1] is gene name
+      if (parts.length > 2 && parts[1].includes(';')) {
+        geneNamePart = parts[1];
+      } else if (parts.length > 1 && !parts[0].includes('Copy#:')) {
+        // Check if parts[0] is cell line (likely if it doesn't contain Copy#)
+        if (this.cellLines().includes(parts[0])) {
+          geneNamePart = parts[1];
+        }
+      }
+
+      const geneName = geneNamePart.split(';')[0].trim();
+      if (geneName) {
+        const current = this.highlightedGenes();
+        if (!current.includes(geneName)) {
+          this.highlightedGenes.set([...current, geneName]);
+        }
+      }
+    }
+  }
+
+  setTablePage(page: number): void {
+    if (page >= 1 && page <= this.tableTotalPages()) {
+      this.tablePage.set(page);
+    }
+  }
+
   applyBatchResult(result: BatchSelectResult): void {
+    this.tablePage.set(1);
     let matchedGenes: string[];
     if (result.mode === 'gene') {
       matchedGenes = this.dataService.fuzzyMatchGenes(result.identifiers);
@@ -236,6 +324,7 @@ export class ScatterPlot implements OnInit {
   }
 
   toggleCellLine(cellLine: string): void {
+    this.tablePage.set(1);
     this.selectedCellLines.update(lines => {
       if (lines.includes(cellLine)) {
         return lines.filter(l => l !== cellLine);
@@ -245,6 +334,7 @@ export class ScatterPlot implements OnInit {
   }
 
   selectSearchResult(value: string): void {
+    this.tablePage.set(1);
     let geneName: string;
     if (this.searchMode() === 'gene') {
       geneName = value.split(/[;\s]/)[0];
@@ -260,18 +350,22 @@ export class ScatterPlot implements OnInit {
   }
 
   removeGene(gene: string): void {
+    this.tablePage.set(1);
     this.highlightedGenes.update(genes => genes.filter(g => g !== gene));
   }
 
   selectAllCellLines(): void {
+    this.tablePage.set(1);
     this.selectedCellLines.set([...this.cellLines()]);
   }
 
   clearCellLineSelection(): void {
+    this.tablePage.set(1);
     this.selectedCellLines.set([]);
   }
 
   resetSelection(): void {
+    this.tablePage.set(1);
     this.highlightedGenes.set([]);
   }
 
