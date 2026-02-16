@@ -8,4 +8,5 @@ export const routes: Routes = [
   { path: 'home', component: Home },
   { path: 'scatter-plot', component: ScatterPlot },
   { path: 'bar-chart', component: BarChart },
+  { path: '**', redirectTo: 'home' },
 ];
