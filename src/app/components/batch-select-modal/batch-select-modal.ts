@@ -43,18 +43,14 @@ export class BatchSelectModal implements OnInit, OnDestroy {
   readonly pageSize = 10;
   readonly currentPage = signal<number>(1);
 
-  readonly filteredLists = computed(() => {
-    return this.filterLists();
-  });
-
   readonly paginatedLists = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize;
     const end = start + this.pageSize;
-    return this.filteredLists().slice(start, end);
+    return this.filterLists().slice(start, end);
   });
 
   readonly totalPages = computed(() => {
-    return Math.ceil(this.filteredLists().length / this.pageSize);
+    return Math.ceil(this.filterLists().length / this.pageSize);
   });
 
   readonly pages = computed(() => {

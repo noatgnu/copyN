@@ -1,7 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { DataFilterList, DataFilterListResponse } from '../interfaces/data-filter-list';
+import { 
+  DataFilterList, 
+  DataFilterListResponse, 
+  DataFilterCategoryResponse, 
+  DataFilterListItemResponse 
+} from '../interfaces/data-filter-list';
 
 @Injectable({
   providedIn: 'root',
@@ -47,15 +52,21 @@ export class ApiService {
 
     return this.http
       .get<DataFilterListResponse>(`${this.baseUrl()}/data_filter_list/`, { params: httpParams })
-      .pipe(map(response => response.results));
+      .pipe(
+        map(response => response.results || [])
+      );
   }
 
   getFilterListById(id: number): Observable<DataFilterList> {
-    return this.http.get<DataFilterList>(`${this.baseUrl()}/data_filter_list/${id}/`);
+    return this.http.get<DataFilterListItemResponse>(`${this.baseUrl()}/data_filter_list/${id}/`).pipe(
+      map(response => response.data)
+    );
   }
 
   getAllCategories(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.baseUrl()}/data_filter_list/get_all_category/`);
+    return this.http.get<DataFilterCategoryResponse>(`${this.baseUrl()}/data_filter_list/get_all_category/`).pipe(
+      map(response => (response.data || []).filter(cat => cat !== "User's Lists"))
+    );
   }
 
   parseFilterListData(data: string): string[] {

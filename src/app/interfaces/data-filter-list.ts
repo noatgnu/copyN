@@ -3,7 +3,6 @@ export interface DataFilterList {
   name: string;
   data: string;
   default: boolean;
-  category?: string;
 }
 
 export interface DataFilterListResponse {
@@ -11,4 +10,12 @@ export interface DataFilterListResponse {
   next: string | null;
   previous: string | null;
   results: DataFilterList[];
+}
+
+export interface DataFilterCategoryResponse {
+  data: string[];
+}
+
+export interface DataFilterListItemResponse {
+  data: DataFilterList;
 }
