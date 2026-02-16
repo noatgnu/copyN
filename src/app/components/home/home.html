@@ -1,0 +1,45 @@
+<div class="min-h-screen bg-gray-50 p-4">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-xl font-semibold text-gray-900 mb-4">Copy Number Analysis</h1>
+    <p class="text-sm text-gray-600 mb-6">Select an analysis type to explore proteomics copy number data from 28 cell lines.</p>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <a routerLink="/scatter-plot" class="block p-4 bg-white border border-gray-200 rounded hover:border-indigo-500 hover:shadow transition-all">
+        <h2 class="text-base font-medium text-gray-900 mb-1">Rank vs Copy Number</h2>
+        <p class="text-xs text-gray-600">View scatter plot of protein rank versus log10 copy number for selected cell lines. Highlight specific genes across samples.</p>
+      </a>
+
+      <a routerLink="/bar-chart" class="block p-4 bg-white border border-gray-200 rounded hover:border-indigo-500 hover:shadow transition-all">
+        <h2 class="text-base font-medium text-gray-900 mb-1">Copy Number Distribution</h2>
+        <p class="text-xs text-gray-600">Compare copy number of selected genes across multiple cell lines with bar chart visualization.</p>
+      </a>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded p-4">
+      <h2 class="text-base font-medium text-gray-900 mb-3">Available Cell Lines</h2>
+      @if (loading()) {
+        <p class="text-sm text-gray-500">Loading cell lines...</p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-2 px-3 font-medium text-gray-700">#</th>
+                <th class="text-left py-2 px-3 font-medium text-gray-700">Cell Line</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (cellLine of cellLines(); track cellLine; let i = $index) {
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                  <td class="py-2 px-3 text-gray-500">{{ i + 1 }}</td>
+                  <td class="py-2 px-3 text-gray-900">{{ cellLine }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">Total: {{ cellLines().length }} cell lines</p>
+      }
+    </div>
+  </div>
+</div>
