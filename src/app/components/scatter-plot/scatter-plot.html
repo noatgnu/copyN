@@ -115,16 +115,17 @@
 
         <div class="flex-1 flex overflow-hidden">
           <div class="flex-1 p-2 overflow-hidden border-r border-gray-200">
-            @if (hasData()) {
-              <plotly-plot
-                [data]="plotData()"
-                [layout]="plotLayout()"
-                [config]="plotConfig"
-                [useResizeHandler]="true"
-                (plotly_click)="onPlotClick($event)"
-                class="block w-full h-full"
-              ></plotly-plot>
-            } @else {
+                      @if (hasData()) {
+                        <plotly-plot
+                          [data]="plotData()"
+                          [layout]="plotLayout()"
+                          [config]="plotConfig"
+                          [useResizeHandler]="true"
+                          (plotlyClick)="onPlotClick($event)"
+                          class="block w-full h-full"
+                        ></plotly-plot>
+                      } @else {
+            
               <div class="flex items-center justify-center h-full text-gray-500 text-sm">
                 Select cell lines from the sidebar to view data
               </div>

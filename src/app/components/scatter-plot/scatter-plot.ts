@@ -27,6 +27,7 @@ interface PlotTrace {
     symbol?: string;
   };
   text: string[];
+  geneNames?: string[];
   textposition?: string;
   textfont?: {
     size: number;
@@ -166,6 +167,7 @@ export class ScatterPlot implements OnInit {
           opacity: 0.7,
         },
         text: normalPoints.map(p => `${p.geneName}<br>Copy#: ${p.copyNumber.toFixed(0)}<br>Rank: ${p.x}`),
+        geneNames: normalPoints.map(p => p.geneName.split(';')[0].trim()),
         hoverinfo: 'text',
       });
     }
@@ -193,6 +195,7 @@ export class ScatterPlot implements OnInit {
               symbol: 'diamond',
             },
             text: highlightedPoints.map(p => p.geneName.split(';')[0]),
+            geneNames: highlightedPoints.map(p => p.geneName.split(';')[0].trim()),
             textposition: 'top center',
             textfont: {
               size: 9,
@@ -260,30 +263,31 @@ export class ScatterPlot implements OnInit {
     }
 
     const point = event.points[0];
-    const hoverText = point.hovertext || point.text;
+    let geneName = '';
     
-    if (hoverText) {
-      // The hovertext format is: `${cellLine}<br>${p.geneName}<br>Copy#: ...`
-      // Or for normal points: `${p.geneName}<br>Copy#: ...`
-      const parts = hoverText.split('<br>');
-      let geneNamePart = parts[0];
-      
-      // If it's a highlighted point, parts[0] is cell line, parts[1] is gene name
-      if (parts.length > 2 && parts[1].includes(';')) {
-        geneNamePart = parts[1];
-      } else if (parts.length > 1 && !parts[0].includes('Copy#:')) {
-        // Check if parts[0] is cell line (likely if it doesn't contain Copy#)
-        if (this.cellLines().includes(parts[0])) {
-          geneNamePart = parts[1];
+    if (point.data && point.data.geneNames && Array.isArray(point.data.geneNames)) {
+      geneName = point.data.geneNames[point.pointIndex];
+    } else {
+      const hoverText = point.hovertext || point.text;
+      if (hoverText) {
+        const parts = hoverText.split('<br>');
+        // Format 1: "CELL_LINE<br>GENE_NAME<br>Copy#: ..."
+        // Format 2: "GENE_NAME<br>Copy#: ...<br>Rank: ..."
+        
+        let geneNamePart = parts[0];
+        if (parts.length > 1 && parts[1].includes(';') || (parts.length > 2 && parts[2].includes('Copy#:'))) {
+           // This looks like Format 1 where parts[0] is cell line and parts[1] is gene name
+           geneNamePart = parts[1];
         }
+        
+        geneName = geneNamePart.split(/[;\s]/)[0].trim();
       }
+    }
 
-      const geneName = geneNamePart.split(';')[0].trim();
-      if (geneName) {
-        const current = this.highlightedGenes();
-        if (!current.includes(geneName)) {
-          this.highlightedGenes.set([...current, geneName]);
-        }
+    if (geneName) {
+      const current = this.highlightedGenes();
+      if (!current.includes(geneName)) {
+        this.highlightedGenes.set([...current, geneName]);
       }
     }
   }
