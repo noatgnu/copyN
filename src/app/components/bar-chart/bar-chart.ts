@@ -109,7 +109,7 @@ export class BarChart implements OnInit {
             title: { text: 'Copy Number', font: { size: 10 } },
             tickfont: { size: 9 },
           },
-          margin: { l: 50, r: 20, t: 40, b: 80 },
+          margin: { l: 50, r: 20, t: 40, b: 100 },
           showlegend: false,
           hovermode: 'closest',
         }
