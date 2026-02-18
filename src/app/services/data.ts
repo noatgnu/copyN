@@ -89,7 +89,7 @@ export class DataService {
         const col = cellLineColumns[i];
         const cellLine = extractedCellLines[i];
         const value = parseFloat(row[col]);
-        if (!isNaN(value) && value > 0) {
+        if (!isNaN(value)) {
           copyNumbers.set(cellLine, value);
         }
       }
@@ -111,17 +111,12 @@ export class DataService {
 
   private extractCellLineName(columnName: string): string {
     let name = columnName.replace('N: Copy number', '').replace('.raw', '').trim();
-    if (name.startsWith('-')) {
-      name = name.substring(1);
-    }
-    if (name.startsWith(' ')) {
-      name = name.substring(1);
-    }
+    name = name.replace(/^[- ]+/, '');
     const pathMatch = name.match(/\\([^\\]+)$/);
     if (pathMatch) {
       name = pathMatch[1].replace('.raw', '').replace('GS-', '').replace(/\d+_\d+_/, '');
     }
-    return name.trim();
+    return name.trim().replace(/\.+$/, '');
   }
 
   private extractAllAliases(geneNames: string): string[] {
@@ -326,7 +321,7 @@ export class DataService {
     const result: BarChartData[] = [];
     for (const cellLine of cellLines) {
       const copyNumber = protein.copyNumbers.get(cellLine);
-      if (copyNumber && copyNumber > 0) {
+      if (copyNumber !== undefined) {
         result.push({
           cellLine,
           copyNumber,
@@ -382,7 +377,7 @@ export class DataService {
     const result: BarChartData[] = [];
     for (const cellLine of cellLines) {
       const copyNumber = protein.copyNumbers.get(cellLine);
-      if (copyNumber && copyNumber > 0) {
+      if (copyNumber !== undefined) {
         result.push({
           cellLine,
           copyNumber,

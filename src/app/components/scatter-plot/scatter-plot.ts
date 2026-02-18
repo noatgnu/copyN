@@ -151,7 +151,7 @@ export class ScatterPlot implements OnInit {
       const color = colorMap.get(cellLine) || '#6366f1';
 
       const normalPoints = scatterData.filter(p => {
-        const genes = p.geneName.split(';').map(g => g.trim().toUpperCase());
+        const genes = p.geneName.split(/[;\s]+/).map(g => g.trim().toUpperCase());
         return !genes.some(g => highlightedSet.has(g));
       });
 
@@ -167,7 +167,7 @@ export class ScatterPlot implements OnInit {
           opacity: 0.7,
         },
         text: normalPoints.map(p => `${p.geneName}<br>Copy#: ${p.copyNumber.toFixed(0)}<br>Rank: ${p.x}`),
-        geneNames: normalPoints.map(p => p.geneName.split(';')[0].trim()),
+        geneNames: normalPoints.map(p => p.geneName.split(/[;\s]+/)[0].trim()),
         hoverinfo: 'text',
       });
     }
@@ -178,7 +178,7 @@ export class ScatterPlot implements OnInit {
         const color = colorMap.get(cellLine) || '#ef4444';
 
         const highlightedPoints = scatterData.filter(p => {
-          const genes = p.geneName.split(';').map(g => g.trim().toUpperCase());
+          const genes = p.geneName.split(/[;\s]+/).map(g => g.trim().toUpperCase());
           return genes.some(g => highlightedSet.has(g));
         });
 
@@ -194,8 +194,8 @@ export class ScatterPlot implements OnInit {
               color,
               symbol: 'diamond',
             },
-            text: highlightedPoints.map(p => p.geneName.split(';')[0]),
-            geneNames: highlightedPoints.map(p => p.geneName.split(';')[0].trim()),
+            text: highlightedPoints.map(p => p.geneName.split(/[;\s]+/)[0]),
+            geneNames: highlightedPoints.map(p => p.geneName.split(/[;\s]+/)[0].trim()),
             textposition: 'top center',
             textfont: {
               size: 9,
