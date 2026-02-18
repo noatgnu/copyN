@@ -73,6 +73,7 @@ export class DataService {
     const result = Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true,
+      dynamicTyping: true,
     });
 
     const headers = result.meta.fields || [];
@@ -82,25 +83,25 @@ export class DataService {
 
     const proteins: ProteinData[] = [];
 
-    for (const row of result.data as Record<string, string>[]) {
+    for (const row of result.data as Record<string, any>[]) {
       const copyNumbers = new Map<string, number>();
 
       for (let i = 0; i < cellLineColumns.length; i++) {
         const col = cellLineColumns[i];
         const cellLine = extractedCellLines[i];
-        const value = parseFloat(row[col]);
-        if (!isNaN(value)) {
+        const value = row[col];
+        if (typeof value === 'number' && !isNaN(value)) {
           copyNumbers.set(cellLine, value);
         }
       }
 
       if (copyNumbers.size > 0) {
         proteins.push({
-          proteinGroup: row['T: Protein.Group'] || '',
-          geneNames: row['T: Gene Names'] || '',
-          proteinNames: row['T: Protein names'] || '',
+          proteinGroup: String(row['T: Protein.Group'] || ''),
+          geneNames: String(row['T: Gene Names'] || ''),
+          proteinNames: String(row['T: Protein names'] || ''),
           isHistone: row['C: Histones'] === '+',
-          mass: parseFloat(row['N: Mass']) || 0,
+          mass: typeof row['N: Mass'] === 'number' ? row['N: Mass'] : 0,
           copyNumbers,
         });
       }
