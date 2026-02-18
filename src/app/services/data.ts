@@ -74,6 +74,8 @@ export class DataService {
       header: true,
       skipEmptyLines: true,
       dynamicTyping: true,
+      quoteChar: '"',
+      escapeChar: '"',
     });
 
     const headers = result.meta.fields || [];
@@ -143,25 +145,15 @@ export class DataService {
     const index = this.geneAliasIndex();
 
     for (const filterGene of filterGenes) {
-      const upperGene = filterGene.trim().toUpperCase();
-      if (!upperGene) continue;
-
-      const exactMatch = index.get(upperGene);
-      if (exactMatch) {
-        const primaryAlias = this.extractAllAliases(exactMatch)[0];
-        if (primaryAlias) {
-          matchedGenes.add(primaryAlias);
-        }
-        continue;
-      }
-
-      for (const [alias, primaryName] of index.entries()) {
-        if (alias.includes(upperGene) || upperGene.includes(alias)) {
-          const primaryAlias = this.extractAllAliases(primaryName)[0];
+      const parts = filterGene.split(/[;,\s]+/).map(p => p.trim().toUpperCase()).filter(p => p.length > 0);
+      
+      for (const part of parts) {
+        const exactMatch = index.get(part);
+        if (exactMatch) {
+          const primaryAlias = this.extractAllAliases(exactMatch)[0];
           if (primaryAlias) {
             matchedGenes.add(primaryAlias);
           }
-          break;
         }
       }
     }
@@ -175,29 +167,16 @@ export class DataService {
     const index = this.geneAliasIndex();
 
     for (const filterGene of filterGenes) {
-      const upperGene = filterGene.trim().toUpperCase();
-      if (!upperGene) continue;
-
+      const parts = filterGene.split(/[;,\s]+/).map(p => p.trim().toUpperCase()).filter(p => p.length > 0);
       let found = false;
 
-      const exactMatch = index.get(upperGene);
-      if (exactMatch) {
-        const primaryAlias = this.extractAllAliases(exactMatch)[0];
-        if (primaryAlias) {
-          matched.add(primaryAlias);
-          found = true;
-        }
-      }
-
-      if (!found) {
-        for (const [alias, primaryName] of index.entries()) {
-          if (alias.includes(upperGene) || upperGene.includes(alias)) {
-            const primaryAlias = this.extractAllAliases(primaryName)[0];
-            if (primaryAlias) {
-              matched.add(primaryAlias);
-              found = true;
-            }
-            break;
+      for (const part of parts) {
+        const exactMatch = index.get(part);
+        if (exactMatch) {
+          const primaryAlias = this.extractAllAliases(exactMatch)[0];
+          if (primaryAlias) {
+            matched.add(primaryAlias);
+            found = true;
           }
         }
       }
@@ -215,25 +194,15 @@ export class DataService {
     const index = this.accessionIndex();
 
     for (const filterAccession of filterAccessions) {
-      const upperAccession = filterAccession.trim().toUpperCase();
-      if (!upperAccession) continue;
-
-      const exactMatch = index.get(upperAccession);
-      if (exactMatch) {
-        const primaryAlias = this.extractAllAliases(exactMatch)[0];
-        if (primaryAlias) {
-          matchedGenes.add(primaryAlias);
-        }
-        continue;
-      }
-
-      for (const [accession, primaryName] of index.entries()) {
-        if (accession.includes(upperAccession) || upperAccession.includes(accession)) {
-          const primaryAlias = this.extractAllAliases(primaryName)[0];
+      const parts = filterAccession.split(/[;,\s]+/).map(p => p.trim().toUpperCase()).filter(p => p.length > 0);
+      
+      for (const part of parts) {
+        const exactMatch = index.get(part);
+        if (exactMatch) {
+          const primaryAlias = this.extractAllAliases(exactMatch)[0];
           if (primaryAlias) {
             matchedGenes.add(primaryAlias);
           }
-          break;
         }
       }
     }
@@ -247,29 +216,16 @@ export class DataService {
     const index = this.accessionIndex();
 
     for (const filterAccession of filterAccessions) {
-      const upperAccession = filterAccession.trim().toUpperCase();
-      if (!upperAccession) continue;
-
+      const parts = filterAccession.split(/[;,\s]+/).map(p => p.trim().toUpperCase()).filter(p => p.length > 0);
       let found = false;
 
-      const exactMatch = index.get(upperAccession);
-      if (exactMatch) {
-        const primaryAlias = this.extractAllAliases(exactMatch)[0];
-        if (primaryAlias) {
-          matched.add(primaryAlias);
-          found = true;
-        }
-      }
-
-      if (!found) {
-        for (const [accession, primaryName] of index.entries()) {
-          if (accession.includes(upperAccession) || upperAccession.includes(accession)) {
-            const primaryAlias = this.extractAllAliases(primaryName)[0];
-            if (primaryAlias) {
-              matched.add(primaryAlias);
-              found = true;
-            }
-            break;
+      for (const part of parts) {
+        const exactMatch = index.get(part);
+        if (exactMatch) {
+          const primaryAlias = this.extractAllAliases(exactMatch)[0];
+          if (primaryAlias) {
+            matched.add(primaryAlias);
+            found = true;
           }
         }
       }
@@ -312,7 +268,7 @@ export class DataService {
 
     const protein = proteins.find(p => {
       const aliases = this.extractAllAliases(p.geneNames).map(a => a.toUpperCase());
-      return aliases.some(alias => alias === upperGeneName || alias.includes(upperGeneName) || upperGeneName.includes(alias));
+      return aliases.some(alias => alias === upperGeneName);
     });
 
     if (!protein) {
@@ -394,7 +350,7 @@ export class DataService {
     const upperGeneName = geneName.toUpperCase();
     return this.proteinData().find(p => {
       const aliases = this.extractAllAliases(p.geneNames).map(a => a.toUpperCase());
-      return aliases.some(alias => alias === upperGeneName || alias.includes(upperGeneName) || upperGeneName.includes(alias));
+      return aliases.some(alias => alias === upperGeneName);
     });
   }
 }

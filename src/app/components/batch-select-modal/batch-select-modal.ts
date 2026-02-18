@@ -181,6 +181,6 @@ export class BatchSelectModal implements OnInit, OnDestroy {
 
   getItemCount(data: string): number {
     if (!data) return 0;
-    return data.split(/[\n,;]/).filter(item => item.trim().length > 0).length;
+    return data.split(/[\n,;\s]/).filter(item => item.trim().length > 0).length;
   }
 }

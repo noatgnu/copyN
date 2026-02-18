@@ -73,7 +73,7 @@ export class ApiService {
     return data
       .replace(/\r/g, '')
       .split('\n')
-      .flatMap(line => line.split(/[;,]/))
+      .flatMap(line => line.split(/[;,\s]/))
       .map(item => item.trim())
       .filter(item => item.length > 0);
   }
